@@ -13,6 +13,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public UserDaoJDBCImpl() {
     }
 
+    @Override
     public void createUsersTable() {
         try (Connection connection = util.getConnection()) {
             connection.setAutoCommit(false);
@@ -31,6 +32,7 @@ public class UserDaoJDBCImpl implements UserDao {
         }
     }
 
+    @Override
     public void dropUsersTable() {
         try (Connection connection = util.getConnection()) {
             connection.setAutoCommit(false);
@@ -45,6 +47,7 @@ public class UserDaoJDBCImpl implements UserDao {
         }
     }
 
+    @Override
     public void saveUser(String name, String lastName, byte age) {
         long id = 1;
         String selectId = "SELECT * FROM users ORDER BY id DESC LIMIT 1;";
@@ -55,7 +58,6 @@ public class UserDaoJDBCImpl implements UserDao {
             while (result.next()) {
                 id = result.getLong("id") + 1;
             }
-            User user = new User();
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO users(id, name, lastname, age)  values (?,?,?,?);");
             preparedStatement.setLong(1, id);
             preparedStatement.setString(2, name);
@@ -74,6 +76,7 @@ public class UserDaoJDBCImpl implements UserDao {
         }
     }
 
+    @Override
     public void removeUserById(long id) {
         try (Connection connection = util.getConnection()) {
             connection.setAutoCommit(false);
@@ -88,6 +91,7 @@ public class UserDaoJDBCImpl implements UserDao {
         }
     }
 
+    @Override
     public List<User> getAllUsers() {
         List<User> userList = new ArrayList<>();
         User user;
@@ -113,6 +117,7 @@ public class UserDaoJDBCImpl implements UserDao {
         return null;
     }
 
+    @Override
     public void cleanUsersTable() {
         try (Connection connection = util.getConnection()){
             connection.setAutoCommit(false);
