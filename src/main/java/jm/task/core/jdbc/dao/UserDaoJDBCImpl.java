@@ -25,6 +25,7 @@ public class UserDaoJDBCImpl implements UserDao {
                     "age tinyint not null );");
             connection.commit();
             statement.close();
+            System.out.println("Create user table");
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -40,6 +41,7 @@ public class UserDaoJDBCImpl implements UserDao {
             statement.executeUpdate("DROP TABLE IF EXISTS users;");
             connection.commit();
             statement.close();
+            System.out.println("Drop user table");
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -49,24 +51,14 @@ public class UserDaoJDBCImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        long id = 1;
-        String selectId = "SELECT * FROM users ORDER BY id DESC LIMIT 1;";
         try (Connection connection = util.getConnection()) {
             connection.setAutoCommit(false);
-            Statement statement = connection.createStatement();
-            ResultSet result = statement.executeQuery(selectId);
-            while (result.next()) {
-                id = result.getLong("id") + 1;
-            }
-            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO users(id, name, lastname, age)  values (?,?,?,?);");
-            preparedStatement.setLong(1, id);
-            preparedStatement.setString(2, name);
-            preparedStatement.setString(3, lastName);
-            preparedStatement.setByte(4, age);
-            preparedStatement.executeUpdate();
+            PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO users(name, lastname, age)  values (?,?,?)");
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+            preparedStatement.execute();
             connection.commit();
-            statement.close();
-            result.close();
             preparedStatement.close();
             System.out.println("User " + name + " add data base");
         } catch (SQLException e) {
@@ -84,6 +76,7 @@ public class UserDaoJDBCImpl implements UserDao {
             statement.executeUpdate("DELETE FROM users WHERE  id =" + id + ";");
             connection.commit();
             statement.close();
+            System.out.println("User delete in data base");
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -94,19 +87,23 @@ public class UserDaoJDBCImpl implements UserDao {
     @Override
     public List<User> getAllUsers() {
         List<User> userList = new ArrayList<>();
-        User user;
         try (Connection connection = util.getConnection()) {
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM users;");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
             while (resultSet.next()) {
-                user = new User(resultSet.getString("name"),
-                        resultSet.getString("lastname"),
-                        resultSet.getByte("age"));
-                user.setId(resultSet.getLong("id"));
+                Long id = resultSet.getLong("id");
+                String name = resultSet.getString("name");
+                String lastName = resultSet.getString("lastName");
+                Byte age = resultSet.getByte("age");
+                User user = new User(name, lastName, age);
+                user.setId(id);
                 userList.add(user);
             }
             statement.close();
             resultSet.close();
+            for (User userL : userList){
+                System.out.println(userL);
+            }
             return userList;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -114,7 +111,7 @@ public class UserDaoJDBCImpl implements UserDao {
         finally {
             util.getClose();
         }
-        return null;
+        return userList;
     }
 
     @Override
@@ -125,6 +122,7 @@ public class UserDaoJDBCImpl implements UserDao {
             statement.executeUpdate("TRUNCATE users");
             connection.commit();
             statement.close();
+            System.out.println("Clean users table");
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
