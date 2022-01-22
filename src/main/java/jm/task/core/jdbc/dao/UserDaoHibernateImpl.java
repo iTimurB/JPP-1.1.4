@@ -2,6 +2,7 @@ package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.util.HibernateUtil;
+import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
@@ -52,14 +53,14 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
+        User user = new User();
+        user.setName(name);
+        user.setLastName(lastName);
+        user.setAge(age);
         try {
             session = HibernateUtil.getSessionFactory().openSession();
             session.beginTransaction();
-            User user = new User();
-            user.setName(name);
-            user.setLastName(lastName);
-            user.setAge(age);
-            session.save(user);
+            session.persist(user);
             session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,8 +75,8 @@ public class UserDaoHibernateImpl implements UserDao {
         try {
             session = HibernateUtil.getSessionFactory().openSession();
             session.beginTransaction();
-            Query <User>query = session.createQuery("delete User where id = :id_param");
-            query.setParameter("id_param", id);
+            User user = session.get(User.class, id);
+            session.remove(user);
             session.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -118,4 +119,6 @@ public class UserDaoHibernateImpl implements UserDao {
             session.close();
         }
     }
+
+
 }
